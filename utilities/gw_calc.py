@@ -8,6 +8,16 @@ import numpy as np
 from scipy.integrate import ode
 from scipy.optimize import brentq
 
+def au_to_period(a,M):
+    """
+    Returns the period (in days) for a binary
+
+    `a` : semimajor axis [AU]
+    `M` : total mass [Msun]
+    """
+    G = 2.96e-4 # G in days,AU,solar masses
+    return np.sqrt(a**3 * 4*np.pi**2 / (G*M))
+
 def deda_peters(a,e):
     """
     Differential equation from Peters 1964, change in eccentricity
@@ -67,6 +77,34 @@ def eccentricity_at_eccentric_fLow(m1,m2,a0,e0,z,fLow=10,eMax=1.0):
     `fLow` : GW frequency in the detector frame at which to determine eccentricity [Hz]
     `eMax` : eccentricity assigned to systems that form above fLow
     """
+
+    ecc_at_a = lambda a: eccentricity_at_a(m1,m2,a0,e0,a)
+    freq_at_a = lambda a: eccentric_gwave_freq(a,m1+m2,ecc_at_a(a))
+    zero_eq = lambda a: freq_at_a(a) - (fLow * (1+z))
+
+    lower_start = zero_eq(1e-10)
+    upper_start = zero_eq(1)
+
+    if (np.sign(lower_start) == np.sign(upper_start) or
+        np.isnan(lower_start) or np.isnan(upper_start)):
+        return eMax
+    else:
+        a_low = brentq(zero_eq,1e-10,1)
+        return ecc_at_a(a_low)
+
+
+
+def eccentricity_at_eccentric_fLow_multiproc(x,fLow=10,eMax=1.0):
+    """
+    Same as above function, but better suited for parallelization.
+    array `x` : [`m1`,`m2`,`a0`,`e0`,`z`]
+    """
+    # unpack array
+    m1 = x[0]
+    m2 = x[1]
+    a0 = x[2]
+    e0 = x[3]
+    z = x[4]
 
     ecc_at_a = lambda a: eccentricity_at_a(m1,m2,a0,e0,a)
     freq_at_a = lambda a: eccentric_gwave_freq(a,m1+m2,ecc_at_a(a))
