@@ -50,7 +50,6 @@ data = data[['primary_mass','secondary_mass','primary_spin','secondary_spin','z_
 data = data.rename(columns={'primary_mass':'m1', 'secondary_mass':'m2', 'primary_spin':'chi1', 'secondary_spin':'chi2', 'z_mergers':'z', 'a_final(AU)':'a0', 'e_final':'e0', 'weights':'cluster_weight'})
 
 
-data = data.sample(1000, random_state=11, replace=False)
 # --- Loop over reference frequencies --- #
 for fLow in fLow_vals:
     print("Calculating eccentricities for fLow={:d}Hz...".format(fLow))
@@ -83,7 +82,6 @@ for fLow in fLow_vals:
     print("  took {:0.1f}s for {:d} binaries!\n".format(end-start, len(data)))
 
 
-import pdb; pdb.set_trace())
 # --- Save data --- #
 print("Writing output file to {:s}".format(args.output_path))
 data.to_hdf(args.output_path, key='bbh')
