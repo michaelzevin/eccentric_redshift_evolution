@@ -1,0 +1,17 @@
+#!/bin/bash/
+#SBATCH --job-name=eccentricities_redshifting
+#SBATCH --output=eccentricities_redshifting.out
+#SBATCH --time=48:00:00
+#SBATCH --partition=kicp
+#SBATCH --account=kicp
+#SBATCH --nodes=1
+#SBATCH --exclusive
+
+source activate eccentricity-py39
+
+python ../calculate_eccentricities.py \
+--data-path /project2/kicp/michaelzevin/eccentricity/redshift_evolution/data/clusters_det.h5 \
+--output-path /project2/kicp/michaelzevin/eccentricity/redshift_evolution/data/eccentricities_redshifting.hdf5 \
+--fLow 10 5 3 1 \
+--multiproc 16 \
+#--calc-with-no-redshifting
